@@ -1,0 +1,99 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo List</title>
+<link rel="stylesheet" href="./index.html">
+</head>
+<body>
+<div id="todo-list">
+    <h2>Todo List</h2> 
+    <form id="taskForm">
+        <input type="text" id="taskInput" placeholder="Add new task">
+        <button type="button" onclick="addTask()">Add</button>
+    </form>
+    <ul id="tasks"></ul>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        loadTasksFromLocalStorage();
+    });
+
+    function addTask() {
+        var taskInput = document.getElementById("taskInput");
+        var taskText = taskInput.value.trim();
+        
+        if (taskText === "") {
+            alert("Please enter a task!");
+            return;
+        }
+
+        var task = {
+            text: taskText,
+            completed: false
+        };
+
+        var tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        tasks.push(task);
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+
+        renderTask(task);
+
+        taskInput.value = "";
+    }
+
+    function renderTask(task) {
+        var ul = document.getElementById("tasks");
+        var li = document.createElement("li");
+        li.className = "todo-item";
+        
+        var checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
+        checkbox.addEventListener("change", function() {
+            task.completed = checkbox.checked;
+            updateTaskInLocalStorage(task);
+            if (task.completed) {
+                li.style.textDecoration = "line-through";
+            } else {
+                li.style.textDecoration = "none";
+            }
+        });
+        
+        var textNode = document.createTextNode(task.text);
+        var deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.innerHTML = "Delete";
+        deleteBtn.addEventListener("click", function() {
+            ul.removeChild(li);
+            var tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks = tasks.filter(function(t) {
+                return t.text !== task.text;
+            });
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        });
+        
+        li.appendChild(checkbox);
+        li.appendChild(textNode);
+        li.appendChild(deleteBtn);
+        ul.appendChild(li);
+    }
+    function loadTasksFromLocalStorage() {
+        var tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        tasks.forEach(function(task) {
+            renderTask(task);
+        });
+    }
+    function updateTaskInLocalStorage(task) {
+        var tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        tasks.forEach(function(t) {
+            if (t.text === task.text) {
+                t.completed = task.completed;
+            }
+        });
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+</script>
+</body>
+</html>
